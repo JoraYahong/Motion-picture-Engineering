@@ -1,0 +1,28 @@
+• Constant Rate:
+ffmpeg -i .\dancing_org.mp4 -b:v 2048k -vcodec: libx264 -psnr out_2048k.mp4
+• Constant QP:
+ffmpeg -i .\dancing_org.mp4 -vcodec: libx264 -qp 35 -psnr out35qp.mp4
+upscale
+ffmpeg -i 320x138_64k.mp4 -vf scale=1280x548:flags=lanczos 138_64k_upscale.mp4
+Ffmpeg CBR
+ffmpeg -s 640x274 -pix_fmt yuv420p -i dancing.640x274.yuv -vf scale=1920x1080:flags=lanczos -b:v 96k -vcodec libx264 -psnr -pix_fmt yuv420p test96k.mp4
+
+ffmpeg -s 320x138 -pix_fmt yuv420p -i dancing.320x138.yuv -vf scale=1280x548:flags=lanczos -b:v 2048k -vcodec libx264 -psnr -pix_fmt yuv420p test320x138_upscale_2048k.mp4
+
+ffmpeg -i dancing.320x138.yuv -vf scale=1280x548:flags=lanczos dancing320x138_upscale.mp4
+
+psnr
+ffmpeg -i test10240k.mp4 -i 138_64k_upscale.mp4 -lavfi psnr -f null -
+ffmpeg -s 1280x548 -r 25 -pix_fmt yuv420p -i dancing_org.1280x548.yuv -i 1280x548_4096k.mp4  -lavfi psnr -f null -
+trim
+ffmpeg -i dancing_org.mp4 -ss 00:00:00 -t 00:00:5 -strict -2 out.mp4
+CBR
+ffmpeg -s 1280x548 -pix_fmt yuv420p -i dancing_org.1280x548.yuv -b:v 4096k -vcodec libx264 -pix_fmt yuv420p 1280x548_4096k.mp4
+
+Size                 Suggested Bitrates for RD curve (Kbps)
+1280 × 548    256		512	1024 	    2048       3072
+PSNR              31.145	36.005	40.490         44.355    46.942
+640 × 274      96     	         128     	256    	    384    	    512   	     1024 	      2048
+	      
+320 × 138      64                96   	  128 	    256 	    512	     1024	      2048
+	      
