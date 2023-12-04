@@ -1,0 +1,38 @@
+kernel JustAdd4: ImageComputationKernel<eComponentWise> {
+  Image<eRead, eAccessRandom, eEdgeClamped> src; // the input image (binary)
+  Image<eRead, eAccessRandom, eEdgeClamped> l_energy; // another input image
+  // This just shows you how to get two inputs in. I don't use that second input in this piece of code.
+
+  Image<eWrite> dst; // the output image
+  param:
+    float Lambda;
+  
+  local:
+    float alpha; // Penalty for setting segmentation = 1
+ 
+  // Defines user parameters
+// This let's the blinkscript manifest a user controlled slider that allows you to set this parameter 
+  void define() {
+    defineParam(Lambda, "Smoothness Lambda", 5.0f);
+  }
+ 
+  void init() {
+    alpha = 25.0; // 95 % confidence interval
+  }
+
+  // pos gives the position of the kernel in the output image
+  void process(int2 pos) {
+    float left_pel = src(pos.x - 1, pos.y);
+    float right_pel = src(pos.x + 1, pos.y);
+    float top_pel = src(pos.x, pos.y - 1);
+    float bottom_pel = src(pos.x, pos.y + 1); 
+
+// Calculate spatial energy for output = 0 (Background), 1 (not background)
+    float sum = left_pel + right_pel + top_pel + bottom_pel;
+   
+    if ( sum > 0 )
+      dst() = 1;
+    else
+      dst() = 0;
+  }
+};

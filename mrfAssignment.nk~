@@ -1,0 +1,932 @@
+#! D:/Nuke/Nuke13.1v2/nuke-13.1.2.dll -nx
+#write_info Write1 file:"D:/Trinity/5c1/Data/HulaSub/Hula.Motion.%4d.tiff" format:"2048 1080 1" chans:":rgba.red:rgba.green:rgba.blue:" framerange:"1 68" fps:"24" colorspace:"default (sRGB)" datatype:"8 bit" transfer:"unknown" views:"main" timecode:"00:00:00:00" colorManagement:"Nuke"
+version 13.1 v2
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="-1" y="-9" w="1920" h="1001" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1257" stretch="1"/>
+            <splitter orientation="2">
+                <split size="563"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                    <page id="Viewer.2"/>
+                </dock>
+                <split size="396"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name C:/Users/Administrator/Desktop/mrfAssignment.nk
+ frame 47
+ last_frame 68
+ lock_range true
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ monitorOutLUT rec709
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x71c67100
+ label "3D MRF without mc"
+ note_font_size 42
+ xpos 601
+ ypos -263
+ bdwidth 378
+ bdheight 460
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode2
+ tile_color 0x71c67100
+ label "motion compensation"
+ note_font_size 42
+ xpos 1889
+ ypos -875
+ bdwidth 505
+ bdheight 355
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode3
+ tile_color 0x71c67100
+ label "3D MRF with mc"
+ note_font_size 42
+ xpos 1304
+ ypos -278
+ bdwidth 378
+ bdheight 460
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode4
+ tile_color 0x71c67100
+ label ML
+ note_font_size 42
+ xpos 2279
+ ypos -468
+ bdwidth 420
+ bdheight 475
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode5
+ tile_color 0x71c67100
+ label ML
+ note_font_size 42
+ xpos -698
+ ypos -793
+ bdwidth 420
+ bdheight 475
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode6
+ tile_color 0x8e388e00
+ label "2D MRF"
+ note_font_size 42
+ xpos 21
+ ypos -263
+ bdwidth 284
+ bdheight 456
+}
+Read {
+ inputs 0
+ file_type mov
+ file C:/Users/Administrator/Desktop/Hula_cin.mov
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ last 68
+ origlast 68
+ origset true
+ name Read1
+ xpos 790
+ ypos -1023
+}
+set N692acc00 [stack 0]
+Dot {
+ name Dot60
+ xpos 2105
+ ypos -992
+}
+VectorGenerator {
+ Advanced 1
+ name VectorGenerator1
+ xpos 2071
+ ypos -772
+}
+set N69089000 [stack 0]
+Shuffle {
+ in motion
+ name Shuffle1
+ xpos 2295
+ ypos -767
+}
+Write {
+ file D:/Trinity/5c1/Data/HulaSub/Hula.Motion.%4d.tiff
+ file_type tiff
+ checkHashOnRead false
+ version 1
+ name Write1
+ xpos 2295
+ ypos -698
+}
+Read {
+ inputs 0
+ file_type png
+ file C:/Users/Administrator/Desktop/MLtest/Hula.Fore.ACKGT.00047.png
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ origset true
+ name Read2
+ xpos -433
+ ypos 768
+}
+push 0
+BlinkScript {
+ inputs 2
+ recompileCount 1
+ ProgramGroup 1
+ KernelDescription "2 \"EqualsTo\" iterate pixelWise bcd1be60cea15d2194548ece8f665c5b1fc4d609d87773aaf7743543845fc1e4 3 \"src\" Read Point \"ref\" Read Point \"dst\" Write Point 0 0 0"
+ kernelSource "kernel EqualsTo: ImageComputationKernel<ePixelWise> \{\n  Image<eRead, eAccessPoint, eEdgeClamped> src; // the input image (binary)\n  Image<eRead, eAccessPoint, eEdgeClamped> ref; // the reference image\n  // Checks if differences between two images is more than 1e6\n  // If it is .. that pel is coloured RED, otherwise its GREEN\n\n  Image<eWrite> dst; // the output image\n  \n  // pos gives the position of the kernel in the output image\n  void process(int2 pos) \{\n    SampleType(dst) sample(0.0f);\n    SampleType(src) input = src();\n    SampleType(ref) ref_input = ref();\n    float error = fabs(input.x - ref_input.x);\n                   + fabs(input.y - ref_input.y)\n                   + fabs(input.z - ref_input.z);\n    if (error >0.000001)\n      sample.x = 1.0f;\n    else\n      sample.y = 1.0f;\n\n    dst() = sample;\n  \}\n\};"
+ rebuild ""
+ rebuild_finalise ""
+ name BlinkScript1
+ xpos 48
+ ypos 791
+}
+push $N692acc00
+Dot {
+ name Dot59
+ xpos -653
+ ypos -992
+}
+Colorspace {
+ colorspace_out YCbCr
+ name Colorspace1
+ xpos -687
+ ypos -695
+}
+Dot {
+ name Dot2
+ xpos -653
+ ypos -632
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.7393447161 0.4231292009 0.2130081952 1}
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ name mean
+ xpos -556
+ ypos -724
+}
+Dot {
+ name Dot3
+ xpos -522
+ ypos -619
+}
+Dot {
+ name Dot6
+ xpos -522
+ ypos -619
+}
+Merge2 {
+ inputs 2
+ operation minus
+ name Merge3
+ xpos -650
+ ypos -561
+}
+Expression {
+ expr0 r*r
+ expr1 g*g
+ expr2 b*b
+ name Expression8
+ xpos -650
+ ypos -518
+}
+Dot {
+ name Dot5
+ xpos -616
+ ypos -486
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.00193 0.00021 0.000251 1}
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ name variance
+ xpos -367
+ ypos -721
+}
+Expression {
+ expr0 2*r
+ expr1 2*g
+ expr2 2*b
+ name Expression6
+ xpos -367
+ ypos -565
+}
+Dot {
+ name Dot4
+ xpos -333
+ ypos -486
+}
+Merge2 {
+ inputs 2
+ operation divide
+ name Merge4
+ xpos -516
+ ypos -489
+}
+Expression {
+ expr0 r+g+b
+ expr1 r+g+b
+ expr2 r+g+b
+ name channel_sum
+ xpos -516
+ ypos -433
+}
+Dot {
+ name Dot1
+ xpos -483
+ ypos -371
+}
+set N27e5dc00 [stack 0]
+Expression {
+ temp_name0 th
+ temp_expr0 60
+ expr0 r>th
+ expr1 g>th
+ expr2 b>th
+ name Binery
+ xpos -517
+ ypos -344
+}
+Dot {
+ name Dot10
+ xpos -483
+ ypos -320
+}
+Dot {
+ name Dot11
+ xpos -483
+ ypos -251
+}
+Dot {
+ name Dot12
+ xpos -483
+ ypos -158
+}
+set N27e5d800 [stack 0]
+Dot {
+ name Dot24
+ xpos -216
+ ypos -158
+}
+set N690f3800 [stack 0]
+Dot {
+ name Dot25
+ xpos -216
+ ypos -558
+}
+Dot {
+ name Dot27
+ xpos 409
+ ypos -558
+}
+Dot {
+ name Dot28
+ xpos 785
+ ypos -558
+}
+set N690f2400 [stack 0]
+Dot {
+ name Dot52
+ xpos 1045
+ ypos -558
+}
+set N68f27c00 [stack 0]
+Dot {
+ name Dot53
+ xpos 1488
+ ypos -558
+}
+Dot {
+ name Dot26
+ xpos 1488
+ ypos -366
+}
+push $N692acc00
+Dot {
+ name Dot61
+ xpos 824
+ ypos -706
+}
+Dot {
+ name Dot38
+ xpos 1933
+ ypos -706
+}
+TimeOffset {
+ time_offset 1
+ time ""
+ name TimeOffset2
+ xpos 1899
+ ypos -572
+}
+push $N69089000
+ShuffleCopy {
+ inputs 2
+ in2 motion
+ red red
+ green green
+ blue blue
+ black blue2
+ white alpha2
+ out2 backward
+ name ShuffleCopy1
+ xpos 2071
+ ypos -572
+}
+IDistort {
+ uv backward
+ filter Simon
+ name IDistort1
+ xpos 2290
+ ypos -577
+}
+Colorspace {
+ colorspace_out YCbCr
+ name Colorspace2
+ xpos 2290
+ ypos -370
+}
+Dot {
+ name Dot37
+ xpos 2324
+ ypos -307
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.7393447161 0.4231292009 0.2130081952 1}
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ name mean1
+ xpos 2421
+ ypos -399
+}
+Dot {
+ name Dot54
+ xpos 2455
+ ypos -294
+}
+Dot {
+ name Dot55
+ xpos 2455
+ ypos -294
+}
+Merge2 {
+ inputs 2
+ operation minus
+ name Merge1
+ xpos 2327
+ ypos -236
+}
+Expression {
+ expr0 r*r
+ expr1 g*g
+ expr2 b*b
+ name Expression1
+ xpos 2327
+ ypos -193
+}
+Dot {
+ name Dot56
+ xpos 2361
+ ypos -161
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.00193 0.00021 0.000251 1}
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ name variance1
+ xpos 2610
+ ypos -396
+}
+Expression {
+ expr0 2*r
+ expr1 2*g
+ expr2 2*b
+ name Expression2
+ xpos 2610
+ ypos -240
+}
+Dot {
+ name Dot57
+ xpos 2644
+ ypos -161
+}
+Merge2 {
+ inputs 2
+ operation divide
+ name Merge2
+ xpos 2461
+ ypos -164
+}
+Expression {
+ expr0 r+g+b
+ expr1 r+g+b
+ expr2 r+g+b
+ name channel_sum1
+ xpos 2461
+ ypos -108
+}
+Dot {
+ name Dot58
+ xpos 2494
+ ypos -46
+}
+Expression {
+ temp_name0 th
+ temp_expr0 60
+ expr0 r>th
+ expr1 g>th
+ expr2 b>th
+ name Binery1
+ xpos 2460
+ ypos -19
+}
+Dot {
+ name Dot41
+ xpos 1909
+ ypos -16
+}
+set N68f53000 [stack 0]
+Dot {
+ name Dot40
+ xpos 1909
+ ypos -103
+}
+set N68f53400 [stack 0]
+Dot {
+ name Dot36
+ xpos 1909
+ ypos -170
+}
+push $N27e5dc00
+Dot {
+ name Dot7
+ xpos -181
+ ypos -371
+}
+Dot {
+ name Dot9
+ xpos 164
+ ypos -371
+}
+set N692ae800 [stack 0]
+Dot {
+ name Dot43
+ xpos 431
+ ypos -371
+}
+set N68f52800 [stack 0]
+Dot {
+ name Dot44
+ xpos 1182
+ ypos -371
+}
+Dot {
+ name Dot47
+ xpos 1183
+ ypos -168
+}
+set N68f51800 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 132
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\n  param:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\n  void init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF10
+ xpos 1454
+ ypos -176
+}
+push $N68f53400
+push $N68f51800
+Dot {
+ name Dot45
+ xpos 1183
+ ypos -103
+}
+set N68f52000 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 133
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF11
+ xpos 1454
+ ypos -111
+}
+push $N68f53000
+push $N68f52000
+Dot {
+ name Dot46
+ xpos 1183
+ ypos -16
+}
+set N68f51c00 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 135
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF12
+ xpos 1454
+ ypos -24
+}
+push $N68f53000
+Dot {
+ name Dot42
+ xpos 1909
+ ypos 73
+}
+set N68f52c00 [stack 0]
+push $N68f51c00
+Dot {
+ name Dot48
+ xpos 1183
+ ypos 70
+}
+set N68f51400 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 129
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF13
+ xpos 1454
+ ypos 65
+}
+push $N68f52c00
+Dot {
+ name Dot39
+ xpos 1909
+ ypos 144
+}
+push $N68f51400
+Dot {
+ name Dot49
+ xpos 1184
+ ypos 144
+}
+BlinkScript {
+ inputs 3
+ recompileCount 129
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF14
+ xpos 1455
+ ypos 136
+}
+Dot {
+ name Dot14
+ xpos 1489
+ ypos 656
+}
+Dot {
+ name Dot50
+ xpos 1113
+ ypos 656
+}
+Dot {
+ name Dot51
+ xpos 710
+ ypos 656
+}
+push $N690f2400
+push $N68f27c00
+TimeOffset {
+ time_offset -1
+ time ""
+ name TimeOffset1
+ xpos 1011
+ ypos -295
+}
+Dot {
+ name Dot23
+ xpos 1045
+ ypos -153
+}
+set N690f3c00 [stack 0]
+push $N68f52800
+Dot {
+ name Dot21
+ xpos 431
+ ypos -215
+}
+Dot {
+ name Dot22
+ xpos 431
+ ypos -153
+}
+set N27d64400 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 131
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF5
+ xpos 751
+ ypos -161
+}
+push $N690f3c00
+Dot {
+ name Dot31
+ xpos 1045
+ ypos -88
+}
+set N690f0800 [stack 0]
+push $N27d64400
+Dot {
+ name Dot8
+ xpos 431
+ ypos -88
+}
+set N27daac00 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 133
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF6
+ xpos 751
+ ypos -96
+}
+push $N690f0800
+Dot {
+ name Dot32
+ xpos 1045
+ ypos -5
+}
+set N690f0400 [stack 0]
+push $N27daac00
+Dot {
+ name Dot15
+ xpos 431
+ ypos -5
+}
+set N27daa000 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 135
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF7
+ xpos 751
+ ypos -13
+}
+push $N690f0400
+Dot {
+ name Dot33
+ xpos 1045
+ ypos 85
+}
+set N6908bc00 [stack 0]
+push $N27daa000
+Dot {
+ name Dot16
+ xpos 431
+ ypos 88
+}
+set N27da9800 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 129
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF8
+ xpos 751
+ ypos 80
+}
+push $N6908bc00
+Dot {
+ name Dot34
+ xpos 1045
+ ypos 159
+}
+push $N27da9800
+Dot {
+ name Dot17
+ xpos 431
+ ypos 159
+}
+set N27da9000 [stack 0]
+BlinkScript {
+ inputs 3
+ recompileCount 129
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_3D\" iterate pixelWise f784caf974b5515ce5b07cc2e2208d7437da53400019ef36a207175169f667d5 4 \"energy\" Read Random \"bin_frame_min1\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_3D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin_frame_min1;\nImage<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n    //last frame\n    float left_pel_min1 = bin_frame_min1(pos.x - 1, pos.y).x;\n    float right_pel_min1 = bin_frame_min1(pos.x + 1, pos.y).x;\n    float top_pel_min1 = bin_frame_min1(pos.x, pos.y - 1).x;\n    float bottom_pel_min1 = bin_frame_min1(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    //last frame\n    if(left_pel_min1 != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel_min1 != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    \n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ rebuild_finalise ""
+ name MRF9
+ xpos 752
+ ypos 151
+}
+Dot {
+ name Dot29
+ xpos 786
+ ypos 424
+}
+Dot {
+ name Dot35
+ xpos 786
+ ypos 553
+}
+push $N690f3800
+push $N692ae800
+BlinkScript {
+ inputs 2
+ recompileCount 129
+ ProgramGroup 1
+ KernelDescription "2 \"MRF_2D\" iterate pixelWise 1a989a5ae856c3ecb3e6f1f07144df3726fb92db3a49d79460de538b0e5411e0 3 \"energy\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF_2D : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ "MRF_2D_Smoothness Lambda" 0.05
+ rebuild_finalise ""
+ name MRF
+ xpos 130
+ ypos -166
+}
+push $N27daac00
+BlinkScript {
+ inputs 2
+ recompileCount 125
+ ProgramGroup 1
+ KernelDescription "2 \"MRF\" iterate pixelWise 8b5b2857a2df61ec7a419a4049f3476d72f00b1ebdefa933259fb4ea667b96b0 3 \"energy\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    //float sum = left_pel + right_pel + top_pel +       bottom_pel;\n   \n    //if ( sum > 0 )\n      //dst() = 1;\n    //else\n      //dst() = 0;\n    // Write the result to the output image\n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ "MRF_Smoothness Lambda" 0.05
+ rebuild_finalise ""
+ name MRF1
+ xpos 130
+ ypos -96
+}
+Dot {
+ name Dot63
+ xpos 164
+ ypos -47
+}
+push $N27daa000
+BlinkScript {
+ inputs 2
+ recompileCount 125
+ ProgramGroup 1
+ KernelDescription "2 \"MRF\" iterate pixelWise 8b5b2857a2df61ec7a419a4049f3476d72f00b1ebdefa933259fb4ea667b96b0 3 \"energy\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n    //float sum = left_pel + right_pel + top_pel +       bottom_pel;\n   \n    //if ( sum > 0 )\n      //dst() = 1;\n    //else\n      //dst() = 0;\n    // Write the result to the output image\n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ "MRF_Smoothness Lambda" 0.05
+ rebuild_finalise ""
+ name MRF2
+ xpos 130
+ ypos -13
+}
+push $N27da9800
+BlinkScript {
+ inputs 2
+ recompileCount 125
+ ProgramGroup 1
+ KernelDescription "2 \"MRF\" iterate pixelWise 8b5b2857a2df61ec7a419a4049f3476d72f00b1ebdefa933259fb4ea667b96b0 3 \"energy\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ "MRF_Smoothness Lambda" 0.05
+ rebuild_finalise ""
+ name MRF3
+ xpos 130
+ ypos 80
+}
+push $N27da9000
+BlinkScript {
+ inputs 2
+ recompileCount 126
+ ProgramGroup 1
+ KernelDescription "2 \"MRF\" iterate pixelWise 10a656f5f66f2fccac5f329aa13a9fe5ea93db38951c2da1f7f2d264e8d92df4 3 \"energy\" Read Random \"bin\" Read Random \"dst\" Write Point 1 \"Smoothness Lambda\" Float 1 AACgQQ== 1 \"Lambda\" 1 1 1 \"alpha\" Float 1 1 AAAAAA=="
+ kernelSource "\nkernel MRF : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessRandom, eEdgeClamped> energy;\n  Image<eRead, eAccessRandom, eEdgeClamped> bin;\n  \n // the input image\n  Image<eWrite> dst; // the output image\nparam:\n    float Lambda;\n  \n  local:\n    float alpha; \n \n  void define() \{\n    defineParam(Lambda, \"Smoothness Lambda\", 20.0f);\n  \}\nvoid init() \{\n    alpha = 25.0; \n  \}\n  void process(int2 pos) \{\n    // Read the input image\n    float E0=0,E1=0,El=0; \n\n    float left_pel = bin(pos.x - 1, pos.y).x;\n    float right_pel = bin(pos.x + 1, pos.y).x;\n    float top_pel = bin(pos.x, pos.y - 1).x;\n    float bottom_pel = bin(pos.x, pos.y + 1).x; \n\n    if(left_pel != 0)\n       E0+=1;\n    else\n       E1+=1;\n    if(right_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(top_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n    if(bottom_pel != 0) \n       E0+=1;\n    else \n       E1+=1;\n\n    El= energy(pos.x,pos.y).x;\n    if((Lambda*E0+El)<(alpha+Lambda*E1))\n      dst() = 0;\n    else dst() = 1;\n    \n  \}\n\};\n"
+ useGPUIfAvailable false
+ rebuild ""
+ "MRF_Smoothness Lambda" 0.05
+ rebuild_finalise ""
+ name MRF4
+ xpos 130
+ ypos 151
+}
+Dot {
+ name Dot13
+ xpos 162
+ ypos 274
+}
+Dot {
+ name Dot19
+ xpos 162
+ ypos 430
+}
+Dot {
+ name Dot20
+ xpos 710
+ ypos 430
+}
+push $N27e5d800
+Dot {
+ name Dot62
+ xpos -486
+ ypos 32
+}
+Dot {
+ name Dot30
+ xpos -486
+ ypos 227
+}
+Dot {
+ name Dot18
+ xpos -486
+ ypos 553
+}
+Viewer {
+ inputs 4
+ frame 47
+ frame_range 1-68
+ input_number 4
+ colour_sample_bbox {-1 -0.5460000038 1.001999974 0.525390625}
+ name Viewer1
+ xpos 676
+ ypos 550
+}

@@ -1,0 +1,431 @@
+#! D:/Nuke/Nuke13.1v2/nuke-13.1.2.dll -nx
+version 13.1 v2
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="0" w="1917" h="991" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="1254" stretch="1"/>
+            <splitter orientation="2">
+                <split size="557"/>
+                <dock id="" activePageId="Viewer.2">
+                    <page id="Viewer.1"/>
+                    <page id="Viewer.2"/>
+                </dock>
+                <split size="392"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name C:/Users/Administrator/Desktop/Motion_assignment_1.nk
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement Nuke
+ workingSpaceLUT linear
+ monitorLut sRGB
+ monitorOutLUT rec709
+ int8Lut sRGB
+ int16Lut sRGB
+ logLut Cineon
+ floatLut linear
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x8e388e00
+ label "constant merge "
+ note_font_size 42
+ xpos -329
+ ypos -133
+ bdwidth 317
+ bdheight 209
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode2
+ tile_color 0x388e8e00
+ label "edge detection"
+ note_font_size 42
+ xpos 371
+ ypos -155
+ bdwidth 264
+ bdheight 412
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode3
+ tile_color 0x388e8e00
+ label convolution
+ note_font_size 42
+ xpos 40
+ ypos -124
+ bdwidth 226
+ bdheight 241
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode4
+ tile_color 0x8e8e3800
+ label "shallow dof"
+ note_font_size 42
+ xpos 698
+ ypos -17
+ bdwidth 285
+ bdheight 185
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode5
+ tile_color 0x71c67100
+ note_font_size 42
+ xpos 1156
+ ypos -160
+ bdwidth 420
+ bdheight 475
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode6
+ label MRF
+ xpos 1778
+ ypos -161
+ bdwidth 558
+ bdheight 472
+}
+Viewer {
+ inputs 0
+ frame 1
+ frame_range 1-100
+ name Viewer1
+ xpos -40
+ ypos -9
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.07274667919 0.9176809788 0.347750783 1}
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ name Constant1
+ xpos -287
+ ypos -48
+}
+Constant {
+ inputs 0
+ channels rgb
+ color 1
+ name Constant2
+ xpos -102
+ ypos -50
+}
+Merge2 {
+ inputs 2
+ operation plus
+ name Merge1
+ xpos -186
+ ypos 47
+}
+Expression {
+ inputs 0
+ expr0 0.2
+ expr1 0.3
+ expr2 0.6
+ name Expression1
+ xpos -319
+ ypos 48
+}
+Read {
+ inputs 0
+ file_type mov
+ file C:/Users/Administrator/Desktop/Hula_cin.mov
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ last 68
+ origlast 68
+ origset true
+ name Read3
+ xpos 945
+ ypos -156
+}
+set Ncd9af800 [stack 0]
+Blur {
+ size 4.8
+ quality 10
+ name Blur1
+ xpos 470
+ ypos -45
+}
+set Ncd9af000 [stack 0]
+Matrix {
+ matrix {
+     {-1 0 1}
+     {-2 0 2}
+     {-1 0 1}
+   }
+ name Matrix1
+ xpos 381
+ ypos 9
+}
+Expression {
+ expr0 r*r
+ expr1 g*g
+ expr2 b*b
+ name Expression2
+ xpos 381
+ ypos 109
+}
+push $Ncd9af000
+Matrix {
+ matrix {
+     {1 2 1}
+     {0 0 0}
+     {-1 -2 -1}
+   }
+ name Matrix2
+ xpos 531
+ ypos 9
+}
+Expression {
+ expr0 r*r
+ expr1 g*g
+ expr2 b*b
+ name Expression3
+ xpos 531
+ ypos 106
+}
+Merge2 {
+ inputs 2
+ operation plus
+ name Merge2
+ xpos 453
+ ypos 163
+}
+Expression {
+ expr0 sqrt(r)
+ expr1 sqrt(g)
+ expr2 sqrt(b)
+ name Expression4
+ xpos 453
+ ypos 202
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {1 1 1 1}
+ format "128 128 0 0 128 128 1 128"
+ name Constant3
+ xpos 176
+ ypos -44
+}
+Crop {
+ inputs 0
+ box {795 332 1167 762}
+ reformat true
+ crop false
+ name Crop1
+ xpos 50
+ ypos 1
+}
+Convolve2 {
+ inputs 2
+ filter_channel rgba.red
+ name Convolve1
+ xpos 106
+ ypos 79
+}
+Read {
+ inputs 0
+ file_type png
+ file C:/Users/Administrator/Desktop/flamingo.png
+ format "640 471 0 0 640 471 1 "
+ origset true
+ name Read1
+ xpos 768
+ ypos -2
+}
+set Ncd9ac400 [stack 0]
+Expression {
+ expr3 r>0.23
+ name Expression5
+ xpos 893
+ ypos 63
+}
+Blur {
+ channels alpha
+ size 2.2
+ name Blur3
+ xpos 893
+ ypos 130
+}
+push $Ncd9ac400
+Blur {
+ inputs 1+1
+ size 5.6
+ invert_mask true
+ name Blur2
+ xpos 708
+ ypos 130
+}
+Viewer {
+ inputs 0
+ frame_range 1-68
+ colour_sample_bbox {0.0700000003 -0.4649999999 0.9290000051 0.4600000083}
+ samplepoints {{0.4501953125 0.0380859375}
+   }
+ name Viewer2
+ xpos 1303
+ ypos 363
+}
+push $Ncd9af800
+Dot {
+ name Dot1
+ xpos 1200
+ ypos -125
+}
+Colorspace {
+ colorspace_out YCbCr
+ name Colorspace1
+ xpos 1166
+ ypos -53
+}
+Dot {
+ name Dot2
+ xpos 1200
+ ypos 10
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.7393447161 0.4231292009 0.2130081952 1}
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ name mean
+ xpos 1297
+ ypos -80
+}
+Dot {
+ name Dot3
+ xpos 1331
+ ypos 23
+}
+Dot {
+ name Dot6
+ xpos 1331
+ ypos 23
+}
+Merge2 {
+ inputs 2
+ operation minus
+ name Merge3
+ xpos 1203
+ ypos 81
+}
+Expression {
+ expr0 r*r
+ expr1 g*g
+ expr2 b*b
+ name Expression8
+ xpos 1203
+ ypos 124
+}
+Dot {
+ name Dot5
+ xpos 1237
+ ypos 156
+}
+Constant {
+ inputs 0
+ channels rgb
+ color {0.03 0.0003 0.0003 1}
+ format "2048 1080 0 0 2048 1080 1 2K_DCP"
+ name variance
+ xpos 1486
+ ypos -78
+}
+Expression {
+ expr0 2*r
+ expr1 2*g
+ expr2 2*b
+ name Expression6
+ xpos 1486
+ ypos 76
+}
+Dot {
+ name Dot4
+ xpos 1520
+ ypos 156
+}
+Merge2 {
+ inputs 2
+ operation divide
+ name Merge4
+ xpos 1337
+ ypos 153
+}
+Expression {
+ expr0 r+g+b
+ expr1 r+g+b
+ expr2 r+g+b
+ name Expression9
+ xpos 1337
+ ypos 210
+}
+Expression {
+ temp_name0 th
+ temp_expr0 30
+ expr0 r>th
+ expr1 g>th
+ expr2 b>th
+ name Expression7
+ xpos 1337
+ ypos 244
+}
+Dot {
+ name Dot8
+ xpos 1371
+ ypos 292
+}
+Dot {
+ name Dot9
+ xpos 1640
+ ypos 292
+}
+Dot {
+ name Dot10
+ xpos 1640
+ ypos 77
+}
+Dot {
+ name Dot11
+ xpos 1640
+ ypos -63
+}
+Dot {
+ name Dot7
+ xpos 1817
+ ypos -63
+}
+BlinkScript {
+ ProgramGroup 1
+ kernelSource "\nkernel SaturationKernel : ImageComputationKernel<ePixelWise>\n\{\n  Image<eRead, eAccessPoint, eEdgeClamped> src; // the input image\n  Image<eWrite> dst; // the output image\n\n  param:\n    float saturation; // This parameter is made available to the user.\n\n  local:\n    float3 coefficients;  // This local variable is not exposed to the user.\n\n  // In define(), parameters can be given labels and default values.\n  void define() \{\n    defineParam(saturation, \"Saturation\", 1.2f);\n  \}\n\n  // The init() function is run before any calls to process().\n  // Local variables can be initialized here.\n  void init() \{\n    // Initialise coefficients according to rec. 709 standard.\n    coefficients.x = 0.2126f;\n    coefficients.y = 0.7152f;\n    coefficients.z = 0.0722f;\n  \}\n\n  void process() \{\n    // Read the input image\n    SampleType(src) input = src();\n\n    // Isolate the RGB components\n    float3 srcPixel(input.x, input.y, input.z);\n\n    // Calculate luma\n    float luma = srcPixel.x * coefficients.x\n               + srcPixel.y * coefficients.y\n               + srcPixel.z * coefficients.z;\n    // Apply saturation\n    float3 saturatedPixel = (srcPixel - luma) * saturation + luma;\n\n    // Write the result to the output image\n    dst() = float4(saturatedPixel.x, saturatedPixel.y, saturatedPixel.z, input.w);\n  \}\n\};\n"
+ rebuild ""
+ rebuild_finalise ""
+ name BlinkScript1
+ selected true
+ xpos 1896
+ ypos -71
+}

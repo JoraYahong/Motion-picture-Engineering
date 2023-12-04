@@ -1,0 +1,28 @@
+// export all selected meshes in a seperate obj file
+string $location = "C:/Users/Eduard/Documents/3d/blendshape_animation.txt";
+$fileId = `fopen $location "a"` ;  
+
+//number of total frames
+int $f_total = 250;
+  
+//get names of all blendshapes
+int $shapeCount= `blendShape -q -weightCount blendShape1`;// count the target weights (and therefore the morphs) on the blendshape
+string $shapeNames[] = `listAttr -m -st "weight" blendShape1`;
+
+for( $f =0; $f < $f_total; ++$f)
+{
+    currentTime $f;
+    float $weights_f[] =`blendShape -q -w "neutral1"`;  
+    string $str_weight = "";
+    for($w_idx = 0; $w_idx< $shapeCount; ++$w_idx)
+    {
+        $str_weight = $str_weight + $weights_f[$w_idx] + " ";        
+    }
+    fprint $fileId ($str_weight+"\n") ;  
+}
+
+// Close File  
+fclose $fileId ; 
+
+
+blendShape -q -w "neutral1" 

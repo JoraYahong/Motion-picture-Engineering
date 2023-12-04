@@ -1,0 +1,29 @@
+// Read the input image
+    int x = pos.x;
+    int y = pos.y;
+    int left = x-1;
+    int right = x+1;
+    int up = y+1;
+    int down = y-1;
+    float E0,E1; 
+    int lambda = 20;
+    int alpha;
+    float3 channel;
+    if(all(src(pos.x,up)==float4(1)))
+       E0+=1;
+    else
+       E1+=1;
+    if(all(src(pos.x,down)==float4(1))) E0+=1;
+    else E1+=1;
+    if(all(src(left,pos.y)==float4(1))) E0+=1;
+    else E1+=1;
+    if(all(src(right,pos.y)==float4(1))) E0+=1;
+    else E1+=1;
+    E0 += lambda*src(pos.x,pos.y).x;
+    E1 = 25 + lambda*src(pos.x,pos.y).x;
+    if(E0>E1)  channel= float3(1);
+    else channel = float3(0);
+    
+
+    // Write the result to the output image
+    dst() = float4(channel, 1.0f);
